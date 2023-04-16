@@ -1,0 +1,200 @@
+<!doctype html>
+<html>
+<head>
+    <title>wheel</title>
+    <script type="text/javascript">
+
+
+        function startup() {
+            Options_init();
+
+            const addButton = document.querySelector("#add");
+            addButton.addEventListener("click", add, false);
+
+            const pickButton = document.querySelector("#pick");
+            pickButton.addEventListener("click", pick, false);
+
+            pick();
+
+        }
+
+        function pick() {
+            const options = Object.keys(g_options);
+            const len = options.length;
+            if (len == 0) {
+                result.textContent = "<at least on option needed>";
+                return;
+            }
+
+            for(let i = 0; i < (len * 1000); i++) {
+                const index_a = Math.floor(Math.random() * len);
+                const index_b = Math.floor(Math.random() * len);
+                const temp = options[index_a];
+                options[index_a] = options[index_b];
+                options[index_b] = temp;
+            }
+
+            animate(options, 10);
+        }
+
+        function animate(options, count) {
+            const nameBox = document.querySelector("#result");
+            result.textContent = options[count % options.length];
+            result.classList.add("spinning");
+
+            if (count > 0) {
+                window.setTimeout(() => { animate(options, count -1); }, 200);
+            }
+            else {
+                result.classList.remove("spinning");
+            }
+        }
+
+        function add() {
+            const nameBox = document.querySelector("#name");
+            const name = nameBox.value;
+            const option_added = Options_add(name);
+            if (option_added) {
+                nameBox.value = "";
+                updateQueryString();
+            }
+        }
+
+        let g_options = {};
+        function Options_init() {
+            g_options = {};
+            
+
+            const queryString = window.location.search;
+            const params = new URLSearchParams(queryString);
+            const names = params.getAll("name");
+
+            if (names.length == 0) {
+                names.push("Chocolate", "Icecream", "Sushi")
+            }
+
+            for(let name of names) {
+                Options_add(name);
+            }
+        }
+
+        function Options_remove(name) {
+            if (g_options.hasOwnProperty(name)) {
+                delete g_options[name];
+
+                const div = document.querySelector(`[data-id=${name}]`);
+                div.remove();
+
+                updateQueryString();
+            }
+        }
+
+        function Options_add(name) {
+            if ((name == "") || (g_options.hasOwnProperty(name))) {
+                // name already contained
+                return false;
+            }
+
+            g_options[name] = {name: name};
+
+            const div = document.createElement("div");
+            div.setAttribute("data-id", name)
+            options.appendChild(div);
+
+            const span = document.createElement("span");
+            div.appendChild(span);
+            span.textContent = name;
+
+            const deleteButton = document.createElement("input");
+            div.appendChild(deleteButton);
+            deleteButton.setAttribute("type", "button");
+            deleteButton.setAttribute("value", "Remove");
+            deleteButton.addEventListener("click", () => { 
+                Options_remove(name) 
+            }, false);
+
+            return true;
+        }
+
+        function updateQueryString() {
+            let queryString = "?v=1";
+            for (let option of Object.keys(g_options)) {
+                queryString += `&name=${encodeURI(option)}`;
+            }
+
+            window.history.pushState("wheel", "wheel", queryString);
+        }
+
+    </script>
+    <style type="text/css">
+        .page {
+            max-width: 600px;
+            margin-left: auto;
+            margin-right: auto;
+        }
+
+        .centered {
+            text-align: center;
+        }
+
+        h1 {
+            background-color: #000;
+            color: #f0f0f0;
+            border-radius: 5px;
+            padding-left: 10px;
+        }
+
+        #result {
+            border: 1px solid black;
+            padding: 10px;
+            margin-bottom: 10px;
+            background-color: #a0f0a0;
+        }
+
+        #result.spinning {
+            background-color: #9fccf7;
+        }
+
+        #options > div {
+            clear: both;
+        }
+
+        #add, #options input {
+            width: 100px;
+            float: right;
+        }
+
+        #new {
+            margin-top: 10px;
+            clear: both;
+        }
+
+        #name {
+            width: 400px;
+        }
+
+    </style>
+</head>
+<body onload="startup()">
+<div class="page">
+
+<h1>Random Picker</h1>
+<div class="centered">
+<div id="result">&lt;???&gt;</div>
+<div>
+    <input type="button" id="pick" value="Again" />
+</div>
+</div>
+
+<h1>Options</h1>
+<div id="options"></div>
+
+<div id="new">
+    <label for="name">Name:</label>
+    <input type="text" id="name" value="" />
+    <input type="button" id="add" value="Add" />
+</div>
+
+</div>
+</body>
+</html>
