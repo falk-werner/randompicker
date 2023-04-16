@@ -34,16 +34,17 @@
                 options[index_b] = temp;
             }
 
-            animate(options, 10);
+            animate(options, 90);
         }
 
         function animate(options, count) {
             const nameBox = document.querySelector("#result");
             result.textContent = options[count % options.length];
             result.classList.add("spinning");
+            result.setAttribute("style", `transform: rotate(${count * 6}deg);`)
 
             if (count > 0) {
-                window.setTimeout(() => { animate(options, count -1); }, 200);
+                window.setTimeout(() => { animate(options, count -1); }, 50);
             }
             else {
                 result.classList.remove("spinning");
@@ -145,10 +146,18 @@
         }
 
         #result {
+            /* width: 400px;
+            height: 400px;
+            line-height: 400px;
+            */
             border: 1px solid black;
             padding: 10px;
             margin-bottom: 10px;
+            margin-right: auto;
+            margin-left: auto;
             background-color: #a0f0a0;
+            text-align: center;
+            vertical-align: middle;
         }
 
         #result.spinning {
